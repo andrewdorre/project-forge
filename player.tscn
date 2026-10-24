@@ -1,0 +1,43 @@
+[gd_scene format=3 uid="uid://b1wdt1ir0mol7"]
+
+[ext_resource type="Script" uid="uid://b153gjr4craoj" path="res://scenes/player/player.gd" id="1_4flbx"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_7ye56"]
+radius = 0.35
+height = 1.8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rsm3w"]
+albedo_color = Color(0.17333657, 0.85850406, 0, 1)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_saxbv"]
+material = SubResource("StandardMaterial3D_rsm3w")
+radius = 0.35
+height = 1.8
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_7ye56"]
+radius = 0.2
+
+[node name="Player" type="CharacterBody3D" unique_id=158577719]
+script = ExtResource("1_4flbx")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=707115956]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_7ye56")
+
+[node name="Visual" type="MeshInstance3D" parent="." unique_id=268753886]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+mesh = SubResource("CapsuleMesh_saxbv")
+
+[node name="CameraPivot" type="Node3D" parent="." unique_id=2050440787]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+
+[node name="FirstPersonCamera" type="Camera3D" parent="CameraPivot" unique_id=1534415185]
+current = true
+
+[node name="CameraArm" type="SpringArm3D" parent="CameraPivot" unique_id=1440011783]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+shape = SubResource("SphereShape3D_7ye56")
+spring_length = 3.5
+margin = 0.1
+
+[node name="ThirdPersonCamera" type="Camera3D" parent="CameraPivot/CameraArm" unique_id=276524296]
