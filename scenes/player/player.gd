@@ -12,6 +12,10 @@ extends CharacterBody3D
 @onready var visual: MeshInstance3D = $Visual
 @export var gamepad_look_speed: float = 3.0
 
+@export var movement_profile: MovementProfile
+@export var rpg_profile: MovementProfile
+@export var shooter_profile: MovementProfile
+
 var third_person_enabled: bool = false
 var gravity: float = 9.8
 var sprint_toggled: bool = false
@@ -45,6 +49,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		if event.pressed:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+			
+	if event.is_action_pressed("toggle_movement_profile"):
+		switch_movement_profile()
 
 
 func toggle_camera() -> void:
@@ -58,13 +65,20 @@ func toggle_camera() -> void:
 		visual.visible = false
 
 
+
 func _physics_process(delta: float) -> void:
+	if movement_profile == null:
+		return
+
+	# Gravity
 	if not is_on_floor():
 		velocity.y -= gravity * delta
 
+	# Jump
 	if Input.is_action_just_pressed("jump") and is_on_floor():
-		velocity.y = jump_velocity
+		velocity.y = movement_profile.jump_velocity
 
+	# Keyboard and gamepad movement
 	var input_dir := Input.get_vector(
 		"move_left",
 		"move_right",
@@ -72,30 +86,78 @@ func _physics_process(delta: float) -> void:
         "move_backward"
 	)
 
+	# Convert local input into world-space direction.
+	# Keep analog stick magnitude for variable speed.
 	var direction := (
-		transform.basis * Vector3(input_dir.x, 0, input_dir.y)
+		transform.basis * Vector3(
+			input_dir.x,
+			0.0,
+			input_dir.y
+		)
 	)
 
+	# RPG MOVEMENT
+	if not movement_profile.use_shooter_physics:
 
-# Toggle sprint when the button is clicked.
-	if Input.is_action_just_pressed("sprint"):
-		sprint_toggled = not sprint_toggled
+		# Toggle sprint
+		if Input.is_action_just_pressed("sprint"):
+			sprint_toggled = not sprint_toggled
 
-# Automatically cancel sprint when movement stops.
-	if input_dir.length_squared() < 0.01:
+		# Stop sprinting when movement stops
+		if input_dir.length_squared() < 0.01:
+			sprint_toggled = false
+
+		var speed := movement_profile.movement_speed
+
+		if movement_profile.allow_sprint and sprint_toggled:
+			speed = movement_profile.sprint_speed
+
+		# Preserve our original RPG movement behavior
+		velocity.x = direction.x * speed
+		velocity.z = direction.z * speed
+
+	# BOOMER SHOOTER MOVEMENT
+	else:
+		# Shooter always moves fast; no sprint needed
 		sprint_toggled = false
 
-# Choose the movement speed.
-	var speed := walk_speed
+		var target_velocity := (
+			direction * movement_profile.movement_speed
+		)
 
-	if sprint_toggled:
-		speed = sprint_speed
+		var horizontal_velocity := Vector3(
+			velocity.x,
+			0.0,
+			velocity.z
+		)
 
-	velocity.x = direction.x * speed
-	velocity.z = direction.z * speed
+		if is_on_floor():
 
+			if input_dir.length_squared() < 0.01:
+				# Gradually slow down when movement stops
+				horizontal_velocity = horizontal_velocity.move_toward(
+					Vector3.ZERO,
+					movement_profile.ground_friction * delta
+				)
+			else:
+				# Accelerate toward the desired direction
+				horizontal_velocity = horizontal_velocity.move_toward(
+					target_velocity,
+					movement_profile.ground_acceleration * delta
+				)
+
+		else:
+			# Allow steering while airborne
+			horizontal_velocity = horizontal_velocity.move_toward(
+				target_velocity,
+				movement_profile.air_acceleration * delta
+			)
+
+		velocity.x = horizontal_velocity.x
+		velocity.z = horizontal_velocity.z
 
 	move_and_slide()
+
 
 
 
@@ -121,3 +183,14 @@ func _process(delta: float) -> void:
 			deg_to_rad(-85),
 			deg_to_rad(85)
 		)
+
+
+func switch_movement_profile() -> void:
+	if movement_profile == rpg_profile:
+		movement_profile = shooter_profile
+		print("Movement Profile: SHOOTER")
+	else:
+		movement_profile = rpg_profile
+		print("Movement Profile: RPG")
+
+	sprint_toggled = false

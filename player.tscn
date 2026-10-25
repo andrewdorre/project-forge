@@ -1,6 +1,13 @@
 [gd_scene format=3 uid="uid://b1wdt1ir0mol7"]
 
 [ext_resource type="Script" uid="uid://b153gjr4craoj" path="res://scenes/player/player.gd" id="1_4flbx"]
+[ext_resource type="Script" uid="uid://ke53lgmcgwfr" path="res://scripts/movement_profile.gd" id="2_hqtel"]
+[ext_resource type="Resource" uid="uid://geb4yay2abg6" path="res://resources/movement/rpg_movement.tres" id="3_sweqy"]
+[ext_resource type="Resource" uid="uid://b8y5wxpmjevab" path="res://resources/movement/shooter_movement.tres" id="4_2hs0m"]
+
+[sub_resource type="Resource" id="Resource_d7b70"]
+script = ExtResource("2_hqtel")
+metadata/_custom_type_script = "uid://ke53lgmcgwfr"
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_7ye56"]
 radius = 0.35
@@ -19,6 +26,9 @@ radius = 0.2
 
 [node name="Player" type="CharacterBody3D" unique_id=158577719]
 script = ExtResource("1_4flbx")
+movement_profile = SubResource("Resource_d7b70")
+rpg_profile = ExtResource("3_sweqy")
+shooter_profile = ExtResource("4_2hs0m")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=707115956]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="MovementProfile" format=3 uid="uid://b8y5wxpmjevab"]
+
+[ext_resource type="Script" uid="uid://ke53lgmcgwfr" path="res://scripts/movement_profile.gd" id="1_0xpcg"]
+
+[resource]
+script = ExtResource("1_0xpcg")
+movement_speed = 10.0
+sprint_speed = 10.0
+allow_sprint = false
+use_shooter_physics = true
+ground_acceleration = 80.0
+ground_friction = 45.0
+air_acceleration = 15.0
+metadata/_custom_type_script = "uid://ke53lgmcgwfr"
